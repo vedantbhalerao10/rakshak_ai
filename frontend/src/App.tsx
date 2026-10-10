@@ -22,10 +22,12 @@ const Footer: React.FC = () => (
         <span style={{ fontSize: 13, color: '#475569' }}>🛡️</span>
         <span style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Rakshak AI</span>
         <span style={{ fontSize: 13, color: '#2A3F5F' }}>·</span>
-        <span style={{ fontSize: 13, color: '#475569' }}>Detect. Understand. Stay Safe.</span>
+        <span style={{ fontSize: 13, color: '#475569' }}>AI-Powered Digital Scam & Phishing Shield</span>
+        <span style={{ fontSize: 13, color: '#2A3F5F' }}>·</span>
+        <span style={{ fontSize: 13, color: '#3B82F6' }}>Detect. Understand. Stay Safe.</span>
       </div>
-      <div style={{ fontSize: 12, color: '#2A3F5F' }}>
-        Not investment advice · Educational and safety analysis only · SANGYAN Hackathon Prototype
+      <div style={{ fontSize: 12, color: '#64748B' }}>
+        Digital Safety & Cybersecurity · HackNowa Global Hackathon 2026 Prototype
       </div>
     </div>
   </footer>
@@ -48,6 +50,7 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/analyze" element={<AnalyzerPage onResult={setAnalysisResult} />} />
           <Route path="/results" element={<ResultsPage result={analysisResult} />} />
+          <Route path="/safety-hub" element={<EducationPage />} />
           <Route path="/education" element={<EducationPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/about" element={<AboutPage />} />

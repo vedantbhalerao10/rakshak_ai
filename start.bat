@@ -1,6 +1,6 @@
 @echo off
 echo ========================================================
-echo        Starting Rakshak AI (SANGYAN Prototype)
+echo       Starting Rakshak AI (HackNowa 2026 Prototype)
 echo ========================================================
 echo.
 

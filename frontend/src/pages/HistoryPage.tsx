@@ -68,7 +68,7 @@ const HistoryPage: React.FC = () => {
             <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: '#F1F5F9', marginBottom: 6 }}>
               Analysis History
             </h1>
-            <p style={{ color: '#64748B', fontSize: 14 }}>Your recent investor-safety analyses</p>
+            <p style={{ color: '#64748B', fontSize: 14 }}>Your recent digital safety and threat analyses</p>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <button onClick={load} className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }} id="refresh-history-btn">
@@ -244,12 +244,14 @@ const HistoryPage: React.FC = () => {
             {history.map((item, i) => {
               const InputIcon = getInputIcon(item.input_type);
               const riskColor = getRiskColor(item.risk_level);
+              const threatType = item.threat_type || 'Unable to Determine';
+
               return (
                 <div
                   key={item.id}
                   className="animate-fade-in-up"
                   style={{
-                    background: 'rgba(10, 31, 56, 0.5)',
+                    background: 'rgba(10, 31, 56, 0.55)',
                     border: `1px solid ${getRiskBorderColor(item.risk_level)}`,
                     borderRadius: 14,
                     padding: '16px 20px',
@@ -272,50 +274,65 @@ const HistoryPage: React.FC = () => {
                     <InputIcon size={18} color="#60A5FA" />
                   </div>
 
-                  {/* Content */}
+                  {/* Content & Metadata */}
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ fontSize: 14, color: '#CBD5E1', lineHeight: 1.4, marginBottom: 6 }}>
-                      {item.content_preview.length > 80 ? item.content_preview.slice(0, 80) + '…' : item.content_preview}
+                    <div style={{ fontSize: 14, color: '#CBD5E1', lineHeight: 1.4, marginBottom: 8, fontWeight: 500 }}>
+                      {item.content_preview.length > 90 ? item.content_preview.slice(0, 90) + '…' : item.content_preview}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 11, color: '#475569' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>
                         {getInputTypeLabel(item.input_type)}
                       </span>
                       <span style={{ fontSize: 11, color: '#2A3F5F' }}>·</span>
-                      <span style={{ fontSize: 11, color: '#475569' }}>
+                      <span style={{ fontSize: 12, color: '#64748B' }}>
                         {formatTimestamp(item.timestamp)}
                       </span>
-                      {item.signals_count > 0 && (
-                        <>
-                          <span style={{ fontSize: 11, color: '#2A3F5F' }}>·</span>
-                          <span style={{ fontSize: 11, color: '#94A3B8' }}>
-                            {item.signals_count} signal{item.signals_count !== 1 ? 's' : ''}
-                          </span>
-                        </>
-                      )}
+                      <span style={{ fontSize: 11, color: '#2A3F5F' }}>·</span>
+                      {/* Threat Type Badge */}
+                      <span style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: 4,
+                        background: 'rgba(59, 130, 246, 0.12)',
+                        border: '1px solid rgba(59, 130, 246, 0.25)',
+                        color: '#93C5FD',
+                      }}>
+                        {threatType}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Risk badge */}
+                  {/* Risk Level & Score */}
                   <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6,
+                    display: 'flex', alignItems: 'center', gap: 12,
                     flexShrink: 0,
                   }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{
+                        fontSize: 11, fontWeight: 700, color: riskColor,
+                        letterSpacing: '0.5px', textTransform: 'uppercase',
+                      }}>
+                        {getRiskLabel(item.risk_level)}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748B' }}>
+                        Risk Score
+                      </div>
+                    </div>
                     <div style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: getRiskBgColor(item.risk_level),
                       border: `1px solid ${getRiskBorderColor(item.risk_level)}`,
-                      borderRadius: 999, padding: '4px 12px',
-                      fontSize: 11, fontWeight: 700, color: riskColor,
+                      borderRadius: 12,
+                      width: 48,
+                      height: 48,
+                      fontSize: 16,
+                      fontWeight: 800,
+                      color: riskColor,
+                      fontFamily: "'Space Grotesk', sans-serif",
                     }}>
                       {item.risk_score}
                     </div>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, color: riskColor,
-                      letterSpacing: '0.5px',
-                    }}>
-                      {getRiskLabel(item.risk_level)}
-                    </span>
                   </div>
                 </div>
               );

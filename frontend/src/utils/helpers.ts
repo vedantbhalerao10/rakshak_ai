@@ -62,7 +62,7 @@ export const getInputTypeLabel = (type: string): string => {
   switch (type) {
     case 'text': return 'Message';
     case 'image': return 'Screenshot';
-    case 'url': return 'Website URL';
+    case 'url': return 'URL';
     default: return type;
   }
 };

@@ -25,6 +25,7 @@ class AnalysisRecord(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     input_type: Mapped[str] = mapped_column(String(20))
     content_preview: Mapped[str] = mapped_column(String(300))
+    threat_type: Mapped[str] = mapped_column(String(100), default="Unable to Determine")
     risk_level: Mapped[str] = mapped_column(String(30))
     risk_score: Mapped[int] = mapped_column(Integer)
     signals_count: Mapped[int] = mapped_column(Integer, default=0)
@@ -32,9 +33,16 @@ class AnalysisRecord(Base):
 
 
 async def init_db():
-    """Create database tables."""
+    """Create database tables and apply safe migrations."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe migration for existing SQLite databases: add threat_type if missing
+        try:
+            from sqlalchemy import text
+            await conn.execute(text("ALTER TABLE analyses ADD COLUMN threat_type VARCHAR(100) DEFAULT 'Unable to Determine'"))
+        except Exception:
+            # Column already exists or table freshly created
+            pass
 
 
 async def save_analysis(
@@ -42,7 +50,8 @@ async def save_analysis(
     content_preview: str,
     risk_level: str,
     risk_score: int,
-    signals: list
+    signals: list,
+    threat_type: str = "Unable to Determine"
 ) -> int:
     """Save an analysis result to the database. Returns the new record ID."""
     signals_summary = ", ".join(s.get("label", s.get("type", "")) for s in signals[:5])
@@ -51,6 +60,7 @@ async def save_analysis(
         timestamp=datetime.utcnow(),
         input_type=input_type,
         content_preview=content_preview[:300],
+        threat_type=threat_type or "Unable to Determine",
         risk_level=risk_level,
         risk_score=risk_score,
         signals_count=len(signals),
@@ -77,6 +87,7 @@ async def get_history(limit: int = 50) -> list:
                 "timestamp": r.timestamp.isoformat(),
                 "input_type": r.input_type,
                 "content_preview": r.content_preview,
+                "threat_type": getattr(r, "threat_type", "Unable to Determine") or "Unable to Determine",
                 "risk_level": r.risk_level,
                 "risk_score": r.risk_score,
                 "signals_count": r.signals_count,

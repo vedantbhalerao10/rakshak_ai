@@ -12,6 +12,8 @@ export interface AnalysisSignal {
 export interface AnalysisResult {
   risk_level: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNABLE_TO_DETERMINE';
   risk_score: number;
+  primary_threat?: string;
+  threat_types?: string[];
   summary: string;
   simple_explanation: string;
   signals: AnalysisSignal[];
@@ -32,6 +34,7 @@ export interface HistoryItem {
   timestamp: string;
   input_type: string;
   content_preview: string;
+  threat_type?: string;
   risk_level: string;
   risk_score: number;
   signals_count: number;

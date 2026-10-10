@@ -55,7 +55,8 @@ async def analyze_text_endpoint(request: TextAnalysisRequest):
             content_preview=content[:300],
             risk_level=result["risk_level"],
             risk_score=result["risk_score"],
-            signals=result.get("signals", [])
+            signals=result.get("signals", []),
+            threat_type=result.get("primary_threat", "Unable to Determine")
         )
         return result
 
@@ -68,7 +69,8 @@ async def analyze_text_endpoint(request: TextAnalysisRequest):
         content_preview=content[:300],
         risk_level=result["risk_level"],
         risk_score=result["risk_score"],
-        signals=result.get("signals", [])
+        signals=result.get("signals", []),
+        threat_type=result.get("primary_threat", "Unable to Determine")
     )
 
     return result
@@ -91,38 +93,56 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
             detail="Image too large. Maximum size is 10 MB."
         )
 
-    # Try OCR extraction
+    # Multi-strategy OCR text extraction
     extracted_text = ""
     ocr_available = False
 
+    # Strategy 1: Native Windows Media OCR (winocr)
     try:
-        import pytesseract
+        import winocr
         from PIL import Image
         import io
 
         image = Image.open(io.BytesIO(contents))
-        extracted_text = pytesseract.image_to_string(image).strip()
+        ocr_res = await winocr.recognize_pil(image)
+        if hasattr(ocr_res, "text") and ocr_res.text:
+            extracted_text = ocr_res.text.strip()
+        elif isinstance(ocr_res, dict) and ocr_res.get("text"):
+            extracted_text = ocr_res["text"].strip()
         ocr_available = True
-    except ImportError:
-        extracted_text = ""
-        ocr_available = False
     except Exception:
-        extracted_text = ""
-        ocr_available = True  # OCR available but failed on this image
+        pass
+
+    # Strategy 2: Tesseract OCR (cross-platform fallback)
+    if not extracted_text:
+        try:
+            import pytesseract
+            from PIL import Image
+            import io
+
+            image = Image.open(io.BytesIO(contents))
+            extracted_text = pytesseract.image_to_string(image).strip()
+            ocr_available = True
+        except ImportError:
+            pass
+        except Exception:
+            # Tesseract binary not installed or failed
+            pass
 
     if not extracted_text and not ocr_available:
-        # OCR not installed — analyze filename and metadata
+        # Neither OCR engine is functional on this system
         extracted_text = f"Image file: {file.filename}"
         result = await analyze_text(extracted_text)
         result["input_type"] = "image"
-        result["ocr_note"] = "OCR not available on this server. Text could not be extracted from the image."
+        result["ocr_note"] = "OCR engine is not available on this server. Please type or copy any text from the screenshot into the Message tab."
 
         await save_analysis(
             input_type="image",
             content_preview=f"[Image: {file.filename}]",
             risk_level=result["risk_level"],
             risk_score=result["risk_score"],
-            signals=result.get("signals", [])
+            signals=result.get("signals", []),
+            threat_type=result.get("primary_threat", "Unable to Determine")
         )
         return result
 
@@ -130,11 +150,13 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
         result = {
             "risk_level": "UNABLE_TO_DETERMINE",
             "risk_score": 0,
+            "primary_threat": "Unable to Determine",
+            "threat_types": ["Unable to Determine"],
             "summary": "No text could be extracted from this image.",
-            "simple_explanation": "The image processing system could not extract readable text from this image. Try submitting a higher-quality image, or manually copy any text from the image and use the Message tab instead.",
+            "simple_explanation": "The OCR system could not detect readable characters in this image. This may occur if the image resolution is low, text contrast is faint, or the image contains only non-text graphics. You can manually copy the text from the image into the Message tab.",
             "signals": [],
             "safe_actions": ["If you can read text in the image, copy it and use the Message analysis tab instead."],
-            "uncertainty": "Analysis could not be completed because no text was extracted from the image.",
+            "uncertainty": "Analysis could not be completed because no readable text was extracted from the image.",
             "input_type": "image",
             "demo_mode": False
         }
@@ -150,7 +172,8 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
         content_preview=f"[Image] {extracted_text[:250]}",
         risk_level=result["risk_level"],
         risk_score=result["risk_score"],
-        signals=result.get("signals", [])
+        signals=result.get("signals", []),
+        threat_type=result.get("primary_threat", "Unable to Determine")
     )
 
     return result
@@ -177,7 +200,8 @@ async def analyze_url_endpoint(request: URLAnalysisRequest):
         content_preview=url[:300],
         risk_level=result["risk_level"],
         risk_score=result["risk_score"],
-        signals=result.get("signals", [])
+        signals=result.get("signals", []),
+        threat_type=result.get("primary_threat", "Unable to Determine")
     )
 
     return result

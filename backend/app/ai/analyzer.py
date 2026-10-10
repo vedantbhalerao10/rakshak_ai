@@ -9,47 +9,63 @@ from typing import Optional
 
 from ..risk_engine.scorer import (
     compute_risk_score, score_to_risk_level,
-    generate_safe_actions, generate_simple_explanation
+    generate_safe_actions, generate_simple_explanation,
+    determine_threat_types
 )
 
-SYSTEM_PROMPT = """You are an investor-safety analysis system called Rakshak AI.
+SYSTEM_PROMPT = """You are a digital safety and cybersecurity analysis system called Rakshak AI (AI-Powered Digital Scam & Phishing Shield).
 
-Your job is to identify potential fraud, phishing, manipulation, impersonation, misleading financial claims, and other investor-safety risks in submitted content.
+Your job is to identify potential scams, phishing attempts, impersonation, social-engineering tactics, suspicious links, credential/KYC theft requests, and misleading financial claims in submitted digital content.
 
 You must distinguish evidence from inference.
 
-You must NEVER provide investment recommendations.
-You must NEVER tell the user to buy, sell, or hold any asset.
-You must NEVER predict financial returns or stock prices.
-You must NEVER recommend specific financial products, brokers, or platforms.
+Strict Safety Guardrails:
+- You must NEVER provide investment recommendations or securities advice.
+- You must NEVER tell the user to buy, sell, or hold any asset or security.
+- You must NEVER predict financial returns or stock prices.
+- You must NEVER recommend specific financial products, brokers, or platforms.
+- You must NEVER fabricate evidence or claim 100% certainty that something is definitely fraud.
 
-Do not claim that content is definitely fraudulent unless the supplied evidence conclusively establishes that fact.
-
-Explain warning signs in simple, accessible English that a first-time investor can understand.
+Explain warning signs in simple, accessible language that any digital citizen can understand.
 
 Risk levels:
-- HIGH: Score 60-100. Multiple significant warning signs present.
-- MEDIUM: Score 25-59. Some warning signs present; caution warranted.
+- HIGH: Score 60-100. Multiple significant warning signs or critical phishing/scam signals present.
+- MEDIUM: Score 25-59. Some warning signs present; caution strongly warranted.
 - LOW: Score 0-24. Few or no warning signs detected.
+- UNABLE_TO_DETERMINE: Insufficient data.
 
-Signal types you may detect:
-- GUARANTEED_RETURN: Claims of guaranteed or implausibly high returns
-- URGENCY: Pressure to act immediately
-- PAYMENT_REQUEST: Requests for upfront payment, fees, or transfers
-- CREDENTIAL_REQUEST: Requests for passwords, OTPs, PINs, or account verification
-- AUTHORITY_IMPERSONATION: Unverified claims of SEBI, RBI, government approval
-- SCARCITY_MANIPULATION: Artificial scarcity or exclusivity claims
-- SUSPICIOUS_URL: Suspicious links or domain patterns
-- THREAT_LANGUAGE: Threats of account suspension, legal action, or financial loss
-- INVESTMENT_SOLICITATION: Unsolicited investment offers
+Primary threat categories:
+- Phishing
+- Financial Scam
+- Social Engineering
+- Impersonation
+- Suspicious Link
+- Credential Theft Risk
+- Fake Authority Claim
+- Fraudulent Offer
+- Misinformation / Misleading Claim
+- Unable to Determine
+
+Signal types:
+- GUARANTEED_RETURN: Claims of guaranteed or implausibly high returns with zero risk
+- URGENCY: Pressure to act immediately or today
+- PAYMENT_REQUEST: Direct requests for upfront funds, fees, or transfers
+- CREDENTIAL_REQUEST: Requests for passwords, OTPs, PINs, or KYC account verification
+- AUTHORITY_IMPERSONATION: Unverified claims of government, SEBI, RBI, or institutional approval
+- SCARCITY_MANIPULATION: Artificial scarcity or exclusive limited-spot claims
+- SUSPICIOUS_URL: Suspicious links, credential-harvesting patterns, or unofficial domains
+- THREAT_LANGUAGE: Threats of account suspension, lockout, or lost opportunities
+- INVESTMENT_SOLICITATION: Unsolicited investment schemes or VIP trading channels
 - UNVERIFIED_REGULATORY_CLAIM: Regulatory claims without verifiable registration details
 
-Return ONLY valid JSON matching this exact schema (no markdown, no explanation outside JSON):
+Return ONLY valid JSON matching this exact schema (no markdown, no text outside JSON):
 {
   "risk_level": "HIGH" | "MEDIUM" | "LOW" | "UNABLE_TO_DETERMINE",
   "risk_score": integer 0-100,
+  "primary_threat": "Primary Threat Label (e.g. Financial Scam + Social Engineering or Phishing)",
+  "threat_types": ["Category 1", "Category 2"],
   "summary": "Brief, factual summary of what was detected",
-  "simple_explanation": "Plain-English explanation a first-time investor can understand",
+  "simple_explanation": "Plain-English explanation of why this is suspicious",
   "signals": [
     {
       "type": "SIGNAL_TYPE",
@@ -79,7 +95,7 @@ async def analyze_with_ai(content: str, input_type: str = "text") -> Optional[di
         from openai import AsyncOpenAI
         client = AsyncOpenAI(api_key=api_key, base_url=api_base)
 
-        user_message = f"Analyze this {input_type} for investor-safety warning signs:\n\n{content}"
+        user_message = f"Analyze this {input_type} for digital safety, phishing, and scam warning signs:\n\n{content}"
 
         response = await client.chat.completions.create(
             model=model,
@@ -151,20 +167,25 @@ def analyze_with_rules(content: str, input_type: str = "text") -> dict:
     """
     score, signals = compute_risk_score(content)
     risk_level = score_to_risk_level(score)
+    threat_types, primary_threat = determine_threat_types(signals, content)
     safe_actions = generate_safe_actions(signals)
     simple_explanation = generate_simple_explanation(risk_level, signals)
 
     if risk_level == "LOW" and not signals:
-        summary = "No significant investor-safety warning signs were detected in this content."
-        uncertainty = "Rakshak AI found no clear warning patterns. This does not guarantee the content is safe — always exercise independent judgment."
+        summary = "No significant digital safety warning signs or phishing patterns were detected in this content."
+        uncertainty = "Rakshak AI found no known threat patterns. This is a heuristic indicator and does not replace personal diligence."
+        primary_threat = "Unable to Determine / Educational Content"
+        threat_types = ["Unable to Determine"]
     else:
         detected_labels = [s["label"] for s in signals]
-        summary = f"The content contains {len(signals)} warning sign(s): {', '.join(detected_labels[:3])}{'...' if len(detected_labels) > 3 else ''}."
-        uncertainty = "The risk score reflects pattern-based detection. Rakshak AI cannot independently verify the identity of the sender or confirm fraudulent intent."
+        summary = f"Identified {len(signals)} warning indicator(s): {', '.join(detected_labels[:3])}{'...' if len(detected_labels) > 3 else ''}."
+        uncertainty = "The risk score reflects heuristic pattern analysis. Rakshak AI cannot independently verify sender authenticity or intention."
 
     return {
         "risk_level": risk_level,
         "risk_score": score,
+        "primary_threat": primary_threat,
+        "threat_types": threat_types,
         "summary": summary,
         "simple_explanation": simple_explanation,
         "signals": signals,
@@ -185,6 +206,11 @@ async def analyze_text(content: str) -> dict:
         if ai_result:
             ai_result["input_type"] = "text"
             ai_result["demo_mode"] = False
+            # Ensure threat types
+            if not ai_result.get("threat_types"):
+                t_types, p_threat = determine_threat_types(ai_result.get("signals", []), content)
+                ai_result["threat_types"] = t_types
+                ai_result["primary_threat"] = ai_result.get("primary_threat") or p_threat
             # Supplement with safe actions if missing
             if not ai_result.get("safe_actions"):
                 ai_result["safe_actions"] = generate_safe_actions(ai_result.get("signals", []))
@@ -220,6 +246,10 @@ async def analyze_url(url: str) -> dict:
         combined_score = max(url_score, text_score)
 
     risk_level = score_to_risk_level(combined_score)
+    threat_types, primary_threat = determine_threat_types(combined_signals, url)
+    if "Suspicious Link" not in threat_types and combined_signals:
+        threat_types.append("Suspicious Link")
+
     safe_actions = generate_safe_actions(combined_signals)
     simple_explanation = generate_simple_explanation(risk_level, combined_signals)
 
@@ -231,15 +261,17 @@ async def analyze_url(url: str) -> dict:
         hostname = url
 
     if combined_signals:
-        summary = f"This URL contains {len(combined_signals)} potential warning indicator(s). The domain and URL structure have been analyzed for known risk patterns."
+        summary = f"This URL exhibits {len(combined_signals)} potential threat indicator(s). Structural and pattern checks suggest elevated risk."
     else:
-        summary = f"No obvious suspicious patterns were detected in this URL. This does not confirm the website is safe — always verify the organization independently."
+        summary = "No obvious phishing or deceptive domain patterns were detected in this URL. Always ensure domain legitimacy before entering credentials."
 
-    uncertainty = "URL analysis is based on structural and pattern characteristics only. Rakshak AI does not browse websites or execute their code. A clean URL analysis does not guarantee the website content is safe."
+    uncertainty = "URL analysis evaluates structural and lexical heuristics only without executing code or rendering active web content."
 
     return {
         "risk_level": risk_level,
         "risk_score": combined_score,
+        "primary_threat": primary_threat if combined_signals else "Unable to Determine",
+        "threat_types": threat_types,
         "summary": summary,
         "simple_explanation": simple_explanation,
         "signals": combined_signals,

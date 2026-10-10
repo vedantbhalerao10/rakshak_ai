@@ -1,5 +1,5 @@
 Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "       Starting Rakshak AI (SANGYAN Prototype)          " -ForegroundColor Yellow
+Write-Host "    Starting Rakshak AI (HackNowa 2026 Prototype)       " -ForegroundColor Yellow
 Write-Host "========================================================" -ForegroundColor Cyan
 
 # Start Backend

@@ -1,12 +1,14 @@
-# 🏛️ Rakshak AI — System Architecture
+# Rakshak AI — System Architecture
 
-This document provides a comprehensive technical blueprint of **Rakshak AI**, detailing its architectural layers, data flows, fraud detection methodologies, and safety boundaries.
+**HackNowa Global Hackathon 2026** · **Problem Statement: DIGITAL SAFETY & CYBERSECURITY**
+
+This document provides a technical blueprint of **Rakshak AI (AI-Powered Digital Scam & Phishing Shield)**, detailing its architectural layers, threat evaluation methodologies, data flows, and safety boundaries.
 
 ---
 
 ## 1. High-Level System Architecture
 
-Rakshak AI is engineered as an asynchronous, decoupled client-server web application optimized for speed, explainability, and privacy.
+Rakshak AI employs an asynchronous, decoupled client-server architecture designed for explainability, high reliability, and privacy.
 
 ```mermaid
 graph TB
@@ -14,28 +16,30 @@ graph TB
         UI[React 19 + TypeScript + Vite]
         Router[React Router DOM]
         State[Component State & Axios Client]
+        Components[RiskCard, SignalCard, EvidenceHighlighter]
     end
 
-    subgraph Gateway ["API Gateway / Server Layer"]
-        FastAPI[FastAPI Server :8001]
+    subgraph Server ["Server Layer (FastAPI :8001)"]
+        FastAPI[FastAPI Asynchronous Gateway]
         CORS[CORS Middleware]
-        Lifespan[Async Lifespan Handler]
+        Lifespan[Async Lifespan & Migration Handler]
+        PydanticModels[Pydantic Validation Schemas]
     end
 
-    subgraph Pipeline ["Processing Pipelines"]
-        TextProc[Text Normalizer & Cleaner]
-        OCR[Tesseract OCR / Fallback Pipeline]
-        URLProc[URL Parser & Domain Analyzer]
+    subgraph Ingestion ["Multi-Modal Preprocessing"]
+        TextProc[Text Normalizer & Lexical Parser]
+        OCR[Tesseract OCR Pipeline (Pillow)]
+        URLProc[URL Parser & Host Structure Extractor]
     end
 
-    subgraph CoreEngine ["Risk Intelligence & Reasoning"]
-        Scorer[Rule-Based Scorer (scorer.py)]
-        PatternTaxonomy[Fraud Taxonomy Matcher]
-        AIOrchestrator[AI & Explainability Engine (analyzer.py)]
+    subgraph Engine ["Hybrid Threat Intelligence Engine"]
+        Scorer[Deterministic Risk Engine (scorer.py)]
+        ThreatTaxonomy[Threat Categorizer & Heuristics]
+        AIOrchestrator[AI Reasoning Engine (analyzer.py)]
     end
 
-    subgraph Storage ["Local Persistence Layer"]
-        DB[(SQLite Async via aiosqlite)]
+    subgraph Storage ["Auditable Local Persistence"]
+        DB[(Local SQLite via aiosqlite)]
     end
 
     UI --> Router
@@ -43,7 +47,8 @@ graph TB
     State -- "REST (JSON / Multipart)" --> CORS
     CORS --> FastAPI
     FastAPI --> Lifespan
-    
+    FastAPI --> PydanticModels
+
     FastAPI --> TextProc
     FastAPI --> OCR
     FastAPI --> URLProc
@@ -52,70 +57,93 @@ graph TB
     OCR --> Scorer
     URLProc --> Scorer
 
-    Scorer --> PatternTaxonomy
-    PatternTaxonomy --> AIOrchestrator
+    Scorer --> ThreatTaxonomy
+    Scorer --> AIOrchestrator
+    ThreatTaxonomy --> FastAPI
     AIOrchestrator --> FastAPI
     FastAPI --> DB
 ```
 
 ---
 
-## 2. Component Details
+## 2. Ingestion Pipelines
 
-### 2.1 Frontend Architecture (`frontend/src`)
-* **Framework**: React 19 with TypeScript, bundled using Vite 6.
-* **Styling**: Tailwind CSS coupled with custom design tokens defined in `src/index.css` (custom HSL color palette, deep navy theme, glassmorphism card surfaces, and accessible focus states).
-* **Navigation**: Client-side single-page routing via `react-router-dom`:
-  * `/` — Landing page with live ticker and CTA highlights.
-  * `/analyze` — Multi-tab submission panel (Text, Screenshot upload with `react-dropzone`, URL input).
-  * `/results` — Risk assessment meter, detected signal breakdown, evidence quotes, simple explanations, safe actions, and interactive "Ask Rakshak" chat drawer.
-  * `/education` — 8 scam archetype deep-dives and an interactive 5-second investor safety checklist.
-  * `/history` — Local persistent scan audit log with risk distributions.
-  * `/about` — Architecture, hackathon context, and safety boundaries.
+### 2.1 Message Analysis Pipeline
+* **Input**: Plain-text strings (up to 5,000 characters).
+* **Sanitization**: Normalized string stripping and character boundary checks.
+* **Evaluation**: Sent concurrently through the deterministic regex rule engine and contextual AI analyzer.
 
-### 2.2 Backend Architecture (`backend/app`)
-* **Framework**: FastAPI with Python 3.10+.
-* **Concurrency**: Native Python `asyncio` for non-blocking I/O during database operations and API calls.
-* **Data Validation**: Strict Pydantic models for request validation (`TextAnalysisRequest`, `URLAnalysisRequest`, `ChatRequest`) and structured responses (`AnalysisResult`, `HealthResponse`, `ChatResponse`).
-* **Storage Layer**: SQLite accessed through `SQLAlchemy 2.0` with `aiosqlite` async drivers. Local database files (`rakshak.db`) store only anonymous scan summaries (content snippet, risk level, score, signals).
+### 2.2 Screenshot Analysis Pipeline (OCR)
+* **Input**: Image file (`image/png`, `image/jpeg`, `image/webp` up to 10 MB).
+* **Processing**: In-memory byte parsing via Pillow (`PIL.Image`).
+* **Text Extraction**: Tesseract OCR (`pytesseract.image_to_string`).
+* **Fallback Behavior**: If OCR is unavailable or produces empty text, returns an informative note explaining that image text could not be extracted and guides the user to copy text into the Message tab.
 
----
-
-## 3. Data Flow
-
-### 3.1 Text Analysis Pipeline
-1. **Request**: User submits raw text or selects a demo scenario.
-2. **Sanitization**: Backend strips whitespace, validates length (rejects empty or excessively large inputs).
-3. **Scorer Invocation**: `scorer.compute_risk_score(text)` runs 8 regex/linguistic signal detectors.
-4. **Signal Aggregation**:
-   * Each detected signal adds weighted severity points (High: 25–35 pts, Medium: 15–20 pts, Low: 5–10 pts).
-   * Aggregated score is clamped to `0–100`.
-   * Score maps to severity level: `0–30: LOW`, `31–70: MEDIUM`, `71–100: HIGH`.
-5. **Explainability Pass**:
-   * If `DEMO_MODE=true` (or no API key), the system generates plain-language explanations using predefined contextual templates.
-   * If OpenAI is enabled, `gpt-4o-mini` refines the simple explanation and highlights nuances.
-6. **Persistence**: Saves summary, score, and signals asynchronously to SQLite.
-7. **Response**: Returns complete JSON payload to the frontend.
-
-### 3.2 Image / Screenshot Pipeline
-1. **Upload**: User uploads `.png`, `.jpg`, `.jpeg`, or `.webp` file (up to 10 MB).
-2. **OCR Extraction**: Backend passes image bytes to `pytesseract`.
-3. **Graceful Fallback**: If OCR is unavailable in the environment, the system falls back gracefully, providing actionable guidance to copy readable text into the Message tab.
-4. **Analysis**: Extracted text feeds directly into the same deterministic risk engine.
-
-### 3.3 URL Pipeline
-1. **Validation**: Checks URL structure, scheme (`http/https`), and basic format.
-2. **Domain Heuristics**: Analyzes domain characteristics:
-   * Brand / Regulatory impersonation keywords (`sebi`, `rbi`, `nse`, `bse`, `zerodha`, `groww`).
-   * Suspicious top-level domains (`.xyz`, `.top`, `.tk`, `.in-login`).
-   * High-risk path components (`/kyc-update`, `/bonus`, `/claim-reward`).
-3. **Scoring**: Calculates risk score and outputs actionable safety alerts.
+### 2.3 URL Analysis Pipeline
+* **Input**: URL string (up to 2,000 characters).
+* **URL Parsing**: `urllib.parse.urlparse` extracts scheme, hostname, path, and query parameters.
+* **Structural Checks**:
+  * Unencrypted protocol flag (HTTP vs HTTPS).
+  * Suspicious or free top-level domain extensions (`.xyz`, `.tk`, `.ml`, `.ga`, `.cf`, `.pw`, `.top`, `.click`, `.download`, `.link`, `.gq`, `.work`).
+  * Deceptive keyword matching in hostname (`verify`, `login`, `secure`, `kyc`, `sebi`, `rbi`, `account`).
+  * Raw numeric IP addresses used in place of domain names.
+  * Excessive hostname character length.
+* **Safety Boundary**: Evaluates syntactic and structural characteristics only. Never executes client-side JavaScript or renders arbitrary web assets.
 
 ---
 
-## 4. Security & Privacy Design
+## 3. Threat Engine & Scorer Architecture
 
-* **Zero Sensitive PII Stored**: Full messages, passwords, or personal credentials are never permanently stored.
-* **User Data Sovereignty**: The `/api/history` endpoint supports complete deletion via `DELETE /api/history`.
-* **CORS Hardening**: Strict origin whitelisting (`http://localhost:5173`).
-* **Environment Protection**: All sensitive tokens and keys are loaded via `.env` and strictly excluded from version control via `.gitignore`.
+### 3.1 Deterministic Safety Rules
+The deterministic engine defines weighted pattern rules:
+
+| Rule Key | Base Score | Severity | Focus |
+| :--- | :---: | :---: | :--- |
+| `GUARANTEED_RETURN` | 25 | HIGH | Implausible promises, zero-risk claims, 100% returns |
+| `CREDENTIAL_REQUEST` | 25 | HIGH | OTP requests, passwords, PINs, urgent KYC verification |
+| `AUTHORITY_IMPERSONATION` | 20 | HIGH | Unverified claims of SEBI, RBI, government endorsement |
+| `PAYMENT_REQUEST` | 20 | HIGH | Upfront fees, activation charges, deposit requests |
+| `SUSPICIOUS_URL` | 20 | HIGH | Unrecognized domains, phishing links, deceptive URLs |
+| `URGENCY` | 15 | HIGH | Coercive time pressure, today-only deadlines |
+| `THREAT_LANGUAGE` | 15 | HIGH | Account suspension threats, permanent lockout warnings |
+| `UNVERIFIED_REGULATORY_CLAIM` | 20 | HIGH | Regulatory claims without verifiable registration ID |
+| `SCARCITY_MANIPULATION` | 10 | MEDIUM | Limited spots remaining, exclusive program claims |
+| `INVESTMENT_SOLICITATION` | 10 | MEDIUM | Unsolicited VIP trading groups, jackpot stock tips |
+
+### 3.2 Threat Categorization Mapping
+The `determine_threat_types` function categorizes detected signals into the HackNowa taxonomy:
+* `CREDENTIAL_REQUEST` + `SUSPICIOUS_URL` / `URGENCY` → **Phishing**, **Credential Theft Risk**
+* `GUARANTEED_RETURN` / `PAYMENT_REQUEST` → **Financial Scam**, **Fraudulent Offer**
+* `URGENCY` / `SCARCITY_MANIPULATION` / `THREAT_LANGUAGE` → **Social Engineering**
+* `AUTHORITY_IMPERSONATION` / `UNVERIFIED_REGULATORY_CLAIM` → **Fake Authority Claim**, **Impersonation**
+* `SUSPICIOUS_URL` → **Suspicious Link**
+
+A primary threat label is generated by combining the top 1-2 most significant categories (e.g., *Financial Scam + Social Engineering*, *Phishing / Suspicious Link*).
+
+---
+
+## 4. Database Schema & Migration Strategy
+
+The local persistence layer utilizes SQLite with SQLAlchemy async ORM.
+
+### AnalysisRecord Model
+* `id` (Integer, Primary Key, Autoincrement)
+* `timestamp` (DateTime, UTC)
+* `input_type` (String, 'text' | 'image' | 'url')
+* `content_preview` (String(300))
+* `threat_type` (String(100), default 'Unable to Determine')
+* `risk_level` (String(30), 'HIGH' | 'MEDIUM' | 'LOW' | 'UNABLE_TO_DETERMINE')
+* `risk_score` (Integer, 0–100)
+* `signals_count` (Integer)
+* `signals_summary` (Text)
+
+### Safe Schema Migration
+During database initialization (`init_db`), a non-destructive migration inspects existing table columns and issues `ALTER TABLE analyses ADD COLUMN threat_type VARCHAR(100) DEFAULT 'Unable to Determine'` if missing, preserving historical records across version upgrades.
+
+---
+
+## 5. Security & Isolation Boundaries
+
+1. **No External Secrets Exfiltration**: API keys are isolated server-side via environment variables and never leaked into client bundles.
+2. **Local Data Sovereignty**: History is stored locally in `rakshak.db` and can be purged by the user with a single click.
+3. **Guardrails Against Financial Advice**: The system prompt strictly prohibits investment recommendations, buy/sell calls, and price predictions.

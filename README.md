@@ -1,7 +1,7 @@
-# 🛡️ Rakshak AI
+# Rakshak AI — AI-Powered Digital Safety Shield
 
 > **Detect. Understand. Stay Safe.**  
-> An evidence-first, explainable investor-safety companion developed for the **SANGYAN Hackathon** (Track: *Digital Fraud & Scam Resilience*).
+> Built for **HackNowa Global Hackathon 2026** · **Problem Statement: DIGITAL SAFETY & CYBERSECURITY**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
@@ -12,366 +12,315 @@
 
 ---
 
-## 📌 Problem
+## 1. Problem
 
-India is undergoing an unprecedented retail investment boom, with millions of first-time investors entering the stock market and mutual funds. However, this growth has created an attractive target for digital fraudsters. 
+Digital communication channels (SMS, messaging apps, email, and social networks) have become primary vectors for predatory digital attacks. Threat actors exploit social engineering, urgency manipulation, authority impersonation, credential harvesting, unverified links, and deceptive financial offers to manipulate individuals into compromising their digital identities and finances.
 
-Every day, everyday citizens receive deceptive solicitations via WhatsApp, Telegram, Instagram, and SMS promising:
-* **Guaranteed high returns** (e.g., "30% monthly fixed return")
-* **Fake regulatory endorsements** (fabricated SEBI, RBI, or exchange registration certificates)
-* **Manufactured urgency and scarcity** ("Only 5 VIP slots remain today")
-* **Bogus pre-IPO or institutional quota schemes** requiring upfront deposits
-* **Phishing portals** harvesting demat/bank credentials or OTPs
-
-First-time and retail investors often lack the specialized regulatory knowledge to verify these claims. Traditional cybersecurity tools only provide binary, opaque verdicts ("safe" or "unsafe"), leaving users without actionable context.
+Traditional security measures (such as generic blocklists or binary virus scanners) often provide opaque verdicts ("safe" or "dangerous") without explaining the deceptive manipulation techniques at play. Consequently, users cannot learn how to identify warning signals independently, leaving them vulnerable to new variations of social-engineering and phishing attacks.
 
 ---
 
-## 💡 Solution
+## 2. HackNowa Problem Statement
 
-**Rakshak AI** bridges the investor-protection gap through **evidence-first explainable fraud intelligence**. 
-
-Instead of an arbitrary rating, Rakshak AI dissects suspicious financial content to answer four critical questions:
-1. **What** specific manipulation tactics are present?
-2. **Where** does the evidence appear in the text?
-3. **Why** is this tactic dangerous according to regulatory principles?
-4. **What** concrete, safe steps should the user take next?
-
-Rakshak AI works across **text messages**, **mobile screenshots**, and **suspicious URLs**, providing both a deterministic risk score (0–100) and plain-language guidance that any first-time investor can act upon.
-
----
-
-## ✨ Features
-
-- **Multi-Modal Threat Ingestion**:
-  - **Message Analysis**: Scan SMS, WhatsApp, and Telegram solicitations.
-  - **Screenshot Analysis**: Upload mobile screenshots of chat groups or brochures for text extraction and analysis.
-  - **URL Verification**: Scan suspicious broker, advisory, or investment URLs.
-- **Deterministic & Heuristic Risk Engine**:
-  - 0–100 Risk Score with color-coded severity: `LOW`, `MEDIUM`, `HIGH`.
-  - Detection of 8+ fraud patterns (Guaranteed Returns, Upfront Fee Requests, Urgency Pressure, Authority Impersonation, Scarcity Tactics, Credential Harvesting, and Threat Language).
-- **Exact Evidence Pinpointing**:
-  - Highlights precise quotes and spans directly from the submitted content.
-- **Plain-Language Explanations**:
-  - Demystifies financial and legal jargon into reassuring, actionable investor advice.
-- **Actionable Next Steps**:
-  - Step-by-step guidance on searching official SEBI/RBI registries and reporting cyber fraud (National Cyber Crime Portal & Helpline 1930).
-- **Interactive "Ask Rakshak" AI Safety Chat**:
-  - Context-aware chatbot answering follow-up safety questions without giving financial advice.
-- **Investor Education Hub**:
-  - 8 interactive scam deep-dives (Pump & Dump, Dabba Trading, Pre-IPO Fraud, Deepfake Endorsements, etc.).
-  - Interactive **5-Second Investor Safety Checklist** with real-time score feedback.
-- **Scan History & Analytics**:
-  - Local history log with risk distributions and instant one-click data deletion for privacy.
+* **Hackathon**: HackNowa Global Hackathon 2026
+* **Category**: Digital Safety & Cybersecurity
+* **Evaluation Criteria Addressed**:
+  1. **Innovation & Originality**: Hybrid evaluation pipeline combining deterministic rule-based heuristic weights with AI-assisted contextual reasoning to produce explainable digital safety reports.
+  2. **AI / Technical Implementation**: Structured LLM extraction, deterministic regex safety scoring, Tesseract OCR for screenshot ingestion, and structural URL heuristics.
+  3. **Problem Relevance & Impact**: Directly shields users from phishing campaigns, account takeover, identity theft, and fraudulent financial solicitations.
+  4. **Functionality**: Working end-to-end multi-modal ingestion (text, screenshots, URLs) with real-time heuristic scoring, evidence pinpointing, local SQLite history, and a Digital Safety Hub.
+  5. **Presentation & Demo**: Clean, accessible security dashboard with reliable offline demo scenarios.
 
 ---
 
-## 🏗️ Architecture
+## 3. Solution
 
-```text
- ┌──────────────────────────────────────────────────────────────┐
- │                     User Interface (Browser)                 │
- │       React 19 + TypeScript + Vite + Tailwind CSS System     │
- └───────────────────────────────┬──────────────────────────────┘
-                                 │ REST API (JSON)
-                                 v
- ┌──────────────────────────────────────────────────────────────┐
- │                  FastAPI Application (Python)                │
- │                     Lifespan • CORS • Pydantic               │
- └───────┬───────────────────────┬──────────────────────┬───────┘
-         │                       │                      │
-         v                       v                      v
- ┌───────────────┐       ┌───────────────┐      ┌───────────────┐
- │ Text Pipeline │       │  OCR Pipeline │      │  URL Analyzer │
- │ Clean & Norm  │       │ Image Extract │      │ Domain Health │
- └───────┬───────┘       └───────┬───────┘      └───────┬───────┘
-         │                       │                      │
-         └───────────────────────┼──────────────────────┘
-                                 v
- ┌──────────────────────────────────────────────────────────────┐
- │               Rule-Based Risk Engine (scorer.py)             │
- │         Signal Matchers • Severity Weights • Score (0-100)   │
- └───────────────────────────────┬──────────────────────────────┘
-                                 v
- ┌──────────────────────────────────────────────────────────────┐
- │            Explainability & Intelligence (analyzer.py)       │
- │   Offline Fallback Engine   OR   OpenAI GPT-4o-mini Reasoning │
- └───────────────────────┬──────────────────────────────┬───────┘
-                         v                              v
- ┌───────────────────────────────┐      ┌───────────────────────┐
- │    Evidence-First JSON Report │      │ Local SQLite Database │
- │    Score, Signals, Safe Steps │      │ Async Scan Log & Stats│
- └───────────────────────────────┘      └───────────────────────┘
+**Rakshak AI** is an AI-powered digital safety platform that analyzes suspicious messages, screenshots, and URLs to identify potential scams, phishing attempts, impersonation, social-engineering tactics, suspicious links, and misleading financial claims. It combines deterministic safety rules with AI-based analysis to identify warning signals, provide evidence, explain the risk in simple language, and recommend safe next steps.
+
+Rather than giving a black-box verdict, Rakshak AI provides an explainable **Digital Safety Report**:
+1. **Identifies the primary threat category** (e.g. *Financial Scam + Social Engineering*, *Phishing / Suspicious Link*).
+2. **Extracts exact evidence** from the submitted content.
+3. **Explains why the content is suspicious** in plain language.
+4. **Delivers prioritized safe next steps** so users avoid risky actions.
+
+---
+
+## 4. Key Features
+
+* **Multi-Modal Content Ingestion**:
+  * **Message Analysis**: Scan suspicious SMS, emails, chat messages, or investment solicitations (up to 5,000 characters).
+  * **Screenshot Analysis**: Upload mobile screenshots or promotional banners (PNG, JPG, JPEG, WEBP up to 10 MB) with automated OCR text extraction.
+  * **URL Analysis**: Analyze link structure, domain characteristics, suspicious TLDs, and credential-harvesting patterns without executing untrusted client-side code.
+* **Hybrid Analysis Engine**:
+  * Deterministic heuristic scoring engine with 10+ defined safety rules.
+  * AI-assisted contextual reasoning via OpenAI-compatible endpoints with structured JSON schemas.
+* **Threat Categorization**:
+  * Automatically assigns threat categories to every analysis (Phishing, Impersonation, Financial Scam, Social Engineering, Credential Theft Risk, Fake Authority Claim, Suspicious Link, Fraudulent Offer).
+* **Exact Evidence Pinpointing**:
+  * Highlights the specific text spans and clauses triggering risk indicators.
+* **Digital Safety Hub**:
+  * Educational knowledge base with 8 comprehensive threat cards (What It Is, How It Works, Warning Signs, What To Do) and the **5-Second Safety Check** protocol.
+* **Auditable Local History**:
+  * Fast local storage in SQLite recording date, input type, threat type, risk level, and score with instant clear capability.
+
+---
+
+## 5. Threat Categories
+
+| Threat Category | Description | Primary Heuristic Indicators |
+| :--- | :--- | :--- |
+| **Phishing** | Deceptive communications aimed at stealing credentials or account access | Urgent verification links, spoofed portals, fake security warnings |
+| **Impersonation** | Posing as authorized personnel, regulators, banks, or executives | SEBI, RBI, government agency, or executive spoofing |
+| **Social Engineering** | Psychological manipulation to bypass cautious habits | Manufactured crises, exclusivity claims, artificial scarcity |
+| **Credential Theft Risk** | Direct harvesting of passwords, OTPs, PINs, or sensitive KYC records | Prompts for OTP, PIN, password, or urgent KYC confirmation |
+| **Financial Scams** | Fraudulent investment schemes or fake wealth programs | Guaranteed high returns, zero-risk claims, upfront payment requests |
+| **Fake Authority Claims** | Unverified claims of government, regulatory, or institutional approval | SEBI/RBI/Government verified claims without verifiable registration ID |
+| **Suspicious Links** | High-risk domains, typo-squatted URLs, and unverified landing pages | Non-HTTPS on login forms, high-risk TLDs (.xyz, .tk, .top), numeric IPs |
+| **Urgency & Threats** | Coercive language forcing immediate compliance under duress | Immediate account lockout threats, legal penalties, lost lifetime opportunity |
+
+---
+
+## 6. How It Works
+
+```
+                     USER INPUT
+         (Message Text / Screenshot / URL)
+                        │
+                        ▼
+                  PREPROCESSING
+           (OCR extraction / URL parsing)
+                        │
+       ┌────────────────┴────────────────┐
+       ▼                                 ▼
+DETERMINISTIC SAFETY RULES          AI ANALYSIS
+(10+ weighted regex signals)  (Contextual threat reasoning)
+       └────────────────┬────────────────┘
+                        │
+                        ▼
+               STRUCTURED EVIDENCE
+                        │
+                        ▼
+             HEURISTIC RISK SCORING
+                 (0 – 100 Scale)
+                        │
+                        ▼
+              DIGITAL SAFETY REPORT
+    • Risk Level & Score (Heuristic Indicator)
+    • Primary Threat Type
+    • Warning Signals & Exact Evidence
+    • Plain-English Explanation
+    • Safe Next Steps & Verification Guidance
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## 7. Technical Architecture
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Lucide React, Axios, React Dropzone, React Router DOM |
-| **Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic, HTTPX, Pillow, pytesseract (OCR) |
-| **AI / NLP** | Rule-based fraud pattern heuristic engine, OpenAI GPT-4o-mini (optional), deterministic scenario pipeline |
-| **Database** | SQLite, SQLAlchemy (asyncio), aiosqlite |
-| **Testing** | Pytest, TypeScript compiler (`tsc`), automated browser subagent verification |
+* **Frontend**: React 19 single-page application built with TypeScript and Vite. Responsive dark-mode dashboard styled with custom CSS tokens, Lucide icons, and Recharts.
+* **Backend**: FastAPI (Python 3.10+) asynchronous REST API with Pydantic validation and CORS configuration.
+* **Rule Engine**: Deterministic Python regex evaluation module (`app.risk_engine.scorer`) calculating weighted heuristic contributions.
+* **AI Engine**: Asynchronous OpenAI client integration (`app.ai.analyzer`) enforcing strict JSON schema output and deterministic offline fallback.
+* **OCR Service**: PIL (Pillow) and pytesseract pipeline for image text extraction.
+* **Database**: SQLAlchemy async engine with `aiosqlite` powering local persistence in `rakshak.db`.
 
 ---
 
-## 📁 Project Structure
+## 8. Technology Stack
 
-```text
-rakshak-ai/
+* **Frontend**: React 19, TypeScript 5.7, Vite 6.0, React Router 7, Axios, Lucide React, Recharts, React Dropzone.
+* **Backend**: Python 3.10+, FastAPI 0.115, Uvicorn, Pydantic 2.9, SQLAlchemy 2.0, aiosqlite, OpenAI Python SDK, Pillow, pytesseract.
+* **Storage**: SQLite 3 (local file `rakshak.db`).
+
+---
+
+## 9. Project Structure
+
+```
+rakshak_ai/
 ├── backend/
 │   ├── app/
 │   │   ├── ai/
-│   │   │   ├── __init__.py
-│   │   │   └── analyzer.py          # AI reasoning, URL heuristic & chat handlers
+│   │   │   └── analyzer.py          # AI integration with strict fallback
 │   │   ├── api/
-│   │   │   ├── __init__.py
-│   │   │   └── routes.py            # FastAPI endpoints (/health, /analyze, /chat, etc.)
+│   │   │   └── routes.py            # API endpoint routes
 │   │   ├── database/
-│   │   │   ├── __init__.py
-│   │   │   └── db.py                # Async SQLite storage & statistics
+│   │   │   └── db.py                # Async SQLite database layer & migrations
 │   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   └── schemas.py           # Pydantic schemas
+│   │   │   └── schemas.py           # Pydantic request/response schemas
 │   │   ├── risk_engine/
-│   │   │   ├── __init__.py
-│   │   │   └── scorer.py            # Rule-based scam detection & scoring engine
-│   │   ├── __init__.py
-│   │   └── demo_scenarios.py        # Curated offline scam test scenarios
-│   ├── main.py                      # FastAPI entry point & CORS configuration
-│   ├── requirements.txt             # Python dependencies
-│   ├── test_risk.py                 # Risk engine verification script
-│   └── .env                         # Backend environment config (git-ignored)
+│   │   │   └── scorer.py            # Rule engine, heuristics, & threat mapping
+│   │   └── demo_scenarios.py        # Predefined HackNowa test cases
+│   ├── main.py                      # FastAPI entry point
+│   ├── requirements.txt             # Python backend dependencies
+│   └── test_risk.py                 # Risk engine verification script
 ├── frontend/
 │   ├── src/
-│   │   ├── assets/                  # Logos and icons
 │   │   ├── components/
-│   │   │   ├── AskRakshak.tsx       # Safety AI chatbot drawer
-│   │   │   ├── Navbar.tsx           # Navigation bar with live backend status
-│   │   │   ├── RiskCard.tsx         # Visual risk score gauge
-│   │   │   └── SignalCard.tsx       # Flagged red flag card with evidence quote
+│   │   │   ├── Navbar.tsx           # Navigation bar with clean cybersecurity routing
+│   │   │   ├── RiskCard.tsx         # Score gauge, risk level, & threat badge
+│   │   │   └── SignalCard.tsx       # Expandable signal cards with exact evidence
 │   │   ├── pages/
-│   │   │   ├── AboutPage.tsx        # Project mission & architecture
-│   │   │   ├── AnalyzerPage.tsx     # Message, Screenshot & URL analyzer
-│   │   │   ├── EducationPage.tsx    # 8 Scam types & 5s Safety Checklist
-│   │   │   ├── HistoryPage.tsx      # Past scans log & analytics
-│   │   │   ├── LandingPage.tsx      # Hero section & threat highlights
-│   │   │   └── ResultsPage.tsx      # Explainable analysis report
+│   │   │   ├── LandingPage.tsx      # HackNowa cybersecurity landing page
+│   │   │   ├── AnalyzerPage.tsx     # Message, Screenshot, & URL analyzer
+│   │   │   ├── ResultsPage.tsx      # Comprehensive Digital Safety Report
+│   │   │   ├── EducationPage.tsx    # Digital Safety Hub with 8 threat cards
+│   │   │   ├── HistoryPage.tsx      # Auditable history with threat categories
+│   │   │   └── AboutPage.tsx        # Technical architecture, safety guardrails & privacy
 │   │   ├── services/
 │   │   │   └── api.ts               # Axios API client
 │   │   ├── types/
-│   │   │   └── index.ts             # TypeScript interfaces
-│   │   ├── App.tsx                  # Root application router
-│   │   ├── index.css                # Custom design system & theme variables
-│   │   └── main.tsx                 # React entry point
-│   ├── package.json                 # Frontend dependencies
-│   ├── vite.config.ts               # Vite configuration
-│   └── .env                         # Frontend environment config (git-ignored)
-├── demo/
-│   ├── sample_whatsapp_scam.png     # Test screenshot for image upload
-│   ├── sample_fake_brochure.png     # Test brochure image for image upload
-│   ├── sample_test_inputs.md        # Curated test messages & URLs
-│   ├── DEMO_SCRIPT.md               # 3-5 minute demo walkthrough script
-│   └── generate_demo_images.py      # Python script to reproduce test screenshots
+│   │   │   └── index.ts             # TypeScript interface definitions
+│   │   ├── utils/
+│   │   │   └── helpers.ts           # Evidence highlighter & formatters
+│   │   ├── App.tsx                  # Application layout & routing
+│   │   └── index.css                # Design system styling & tokens
+│   ├── package.json                 # Node dependencies
+│   └── vite.config.ts               # Vite configuration
 ├── docs/
-│   ├── ARCHITECTURE.md              # In-depth architectural blueprint
-│   ├── AI_ANALYSIS.md               # Risk engine & AI safety methodology
-│   ├── DEMO_GUIDE.md                # Step-by-step testing & demo guide
-│   └── screenshots/                 # Application UI captures
-├── presentation/
-│   ├── PPT_CONTENT.md               # 8-slide presentation content
-│   └── screenshots/                 # Presentation slides graphic captures
-├── start.bat                        # One-click Windows startup script
-├── start.ps1                        # One-click PowerShell startup script
-├── .env.example                     # Environment variables template
-├── .gitignore                       # Git ignore configuration
-├── SUBMISSION_DESCRIPTION.md        # 500-word hackathon submission write-up
-├── SUBMISSION_CHECKLIST.md          # Complete hackathon verification checklist
-└── README.md                        # Project documentation
+│   ├── ARCHITECTURE.md              # Detailed architecture documentation
+│   ├── AI_ANALYSIS.md               # AI prompts, guardrails, & schemas
+│   └── DEMO_GUIDE.md                # HackNowa judge testing instructions
+├── SUBMISSION_DESCRIPTION.md        # Hackathon submission summary
+├── SUBMISSION_CHECKLIST.md          # Verification and deliverable checklist
+├── DEMO_SCRIPT.md                   # 3-minute video presentation script
+├── start.bat                        # Windows launch script
+├── start.ps1                        # PowerShell launch script
+└── README.md
 ```
 
 ---
 
-## 🚀 Setup
+## 10. Setup Instructions
 
 ### Prerequisites
-* **Python**: 3.10 or higher
-* **Node.js**: 18.0 or higher
-* **npm**: 9.0 or higher
-* **Git**
+* Python 3.10 or higher
+* Node.js 18 or higher with npm
+* (Optional) Tesseract OCR installed locally for live screenshot text extraction
+
+### 1. Clone & Setup Backend
+```bash
+cd backend
+python -m venv venv
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+# source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 2. Setup Frontend
+```bash
+cd ../frontend
+npm install
+```
+
+### 3. Quick Start (Windows)
+Run the automated launcher from the project root:
+```powershell
+.\start.ps1
+```
+Or double-click `start.bat`.
 
 ---
 
-## ⚙️ Environment Variables
+## 11. Environment Variables
 
-Create environment configuration files from the provided `.env.example` template:
+Create `.env` in `backend/` and `frontend/` (templates provided in `.env.example`):
 
-### 1. Root / Backend (`backend/.env`):
-```ini
+### Backend (`backend/.env`)
+```env
 DEMO_MODE=true
-OPENAI_API_KEY=
-AI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your-openai-api-key-here
 OPENAI_API_BASE=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4o-mini
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8001
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
 DATABASE_URL=sqlite+aiosqlite:///./rakshak.db
 ```
 
-### 2. Frontend (`frontend/.env`):
-```ini
+### Frontend (`frontend/.env`)
+```env
 VITE_API_BASE_URL=http://localhost:8001
 VITE_DEMO_MODE=true
 ```
 
-> **Note**: Setting `DEMO_MODE=true` allows Rakshak AI to run completely offline without an OpenAI API key.
+---
+
+## 12. Demo Mode
+
+Rakshak AI features a deterministic **Demo Mode** (`DEMO_MODE=true` by default):
+* **Zero external API dependencies**: Does not require an active OpenAI API key or network connection to perform complete analyses.
+* **Deterministic Risk Engine**: The rule engine directly detects warning signals, extracts evidence, computes the risk score, and assigns threat categories.
+* **Predefined Hackathon Scenarios**: High-impact test cases available with one-click loading on the Analyze page.
 
 ---
 
-## 💻 Running the Application
-
-### Option A: One-Click Launch (Windows)
-Double-click `start.bat` in the root folder, or run in PowerShell:
-```powershell
-.\start.ps1
-```
-This automatically starts both the FastAPI backend and Vite frontend, then launches your default browser.
-
----
-
-### Option B: Manual Startup
-
-#### 1. Running the Backend
-```bash
-cd backend
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
-
-pip install -r requirements.txt
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001
-```
-* Backend will be available at: **http://127.0.0.1:8001**
-* Interactive API Documentation (Swagger UI): **http://127.0.0.1:8001/docs**
-
-#### 2. Running the Frontend
-In a separate terminal:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-* Frontend will be available at: **http://localhost:5173**
-
----
-
-## 🧪 Demo Mode
-
-Rakshak AI is built with hackathon reliability as a primary design objective.
-
-When `DEMO_MODE=true` is enabled:
-1. **Zero External API Calls**: The application operates with 100% reliability, zero latency spikes, and no external API rate-limit errors.
-2. **Instant Preset Buttons**: On the Analyzer page, users can click one-click preset buttons:
-   * *Guaranteed 30% Return Scam* (Score 91, High Risk)
-   * *Task / Part-Time Job Fraud* (Score 88, High Risk)
-   * *Pre-IPO Allocation Scam* (Score 85, High Risk)
-   * *Legitimate SIP Notification* (Score 0, Low Risk)
-3. **Deterministic Scoring**: The underlying Python regex and linguistic parser identifies all red flags offline.
-
-To enable OpenAI GPT-4o-mini live augmentation, set `DEMO_MODE=false` and insert your `OPENAI_API_KEY` in `backend/.env`.
-
----
-
-## 🔍 Test Scenarios
-
-Try these sample inputs directly in the `/analyze` tab:
-
-### Scenario 1: High Risk Guaranteed Return Message
-```text
-Exclusive investment opportunity. Earn a guaranteed 30% monthly return. This opportunity is officially approved. Send Rs. 25,000 today to activate your account. Only 5 slots remain.
-```
-* **Score**: 91 / 100 (`HIGH`)
-* **Signals**: Guaranteed Return Claim, Upfront Payment Request, Urgency Pressure, Unverified Regulatory Claim, Scarcity Manipulation.
-
-### Scenario 2: Phishing URL
-```text
-https://sebi-secure-portal-verification-login.in/update-kyc
-```
-* **Score**: 85 / 100 (`HIGH`)
-* **Signals**: Regulatory Impersonation, Suspicious Top-Level Domain, Credential Phishing.
-
-### Scenario 3: Legitimate SIP Confirmation
-```text
-Dear Investor, your monthly SIP of Rs. 2,000 in Nifty 50 Index Fund has been successfully processed. NAV: 184.20. Investments are subject to market risks. Read all scheme documents carefully.
-```
-* **Score**: 0 / 100 (`LOW`)
-* **Signals**: No scam patterns; standard regulatory risk disclaimer detected.
-
----
-
-## 📡 API Endpoints
+## 13. API Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | Service health status, demo mode flag, AI status |
-| `POST` | `/api/analyze/text` | Analyzes text message content and returns risk breakdown |
-| `POST` | `/api/analyze/image` | Processes screenshot uploads via OCR and evaluates risk |
-| `POST` | `/api/analyze/url` | Evaluates suspicious URLs for domain spoofing and phishing |
-| `POST` | `/api/chat` | Interactive safety Q&A with the Ask Rakshak assistant |
-| `GET` | `/api/history` | Retrieves recent scan history records |
-| `DELETE` | `/api/history` | Purges all scan history records from the local database |
-| `GET` | `/api/stats` | Aggregated risk score distribution and total scans |
-| `GET` | `/api/demo/scenarios` | Predefined offline demo scenarios |
+| `GET` | `/api/health` | Health check returning status, version, demo mode state, and AI availability |
+| `POST` | `/api/analyze/text` | Analyzes text message or financial offer for threat indicators |
+| `POST` | `/api/analyze/image` | Extracts text via OCR and evaluates threat signals |
+| `POST` | `/api/analyze/url` | Evaluates link structure, domain patterns, and phishing heuristics |
+| `GET` | `/api/history` | Retrieves recent analysis history (Date, Input Type, Threat Type, Score) |
+| `DELETE` | `/api/history` | Purges all analysis history from SQLite |
+| `GET` | `/api/stats` | Returns aggregate counts of total, high, medium, and low risk analyses |
+| `GET` | `/api/demo/scenarios` | Returns predefined HackNowa demonstration scenarios |
 
 ---
 
-## 🛡️ Safety & Limitations
+## 14. Safety & Privacy
 
-Rakshak AI adheres to strict investor-safety boundaries:
-* **No Investment Advice**: Does NOT offer stock recommendations, portfolio management, or buy/sell/hold ratings.
-* **No Price Predictions**: Does NOT predict market trends, returns, or security valuations.
-* **Explicit Uncertainty**: Always states that AI and heuristics provide risk indicators, not judicial determinations of fraud.
-* **Privacy by Design**: Never requests PAN, Aadhaar, demat account numbers, or bank passwords.
-* **Local Data Sovereignty**: Scan history is stored locally in SQLite and can be permanently deleted at any moment.
-
----
-
-## 📸 Screenshots
-
-| Landing Page | Analyzer Interface |
-| :---: | :---: |
-| ![Landing](docs/screenshots/01_landing_page.png) | ![Analyzer](docs/screenshots/02_analyzer_input.png) |
-
-| Risk Score Gauge | Flagged Signals & Evidence |
-| :---: | :---: |
-| ![Risk Meter](docs/screenshots/03_results_risk_meter.png) | ![Signals](docs/screenshots/04_results_signals.png) |
+The system adheres to strict security guardrails:
+* **No Financial Advice**: Never provides buy/sell/hold stock recommendations, securities advice, or price targets.
+* **No Credential Harvesting**: Never requests, stores, or logs real passwords, OTPs, or government identity tokens.
+* **Privacy by Design**: Content snippets stored in local SQLite are truncated to 300 characters. History can be purged at any time.
+* **No False Claims**: Does not claim 100% accuracy, zero false positives, or certainty of criminal intent. Scores are explicitly labeled as **heuristic safety indicators**.
 
 ---
 
-## 🎥 Demo Video
+## 15. Limitations
 
-* **Video Walkthrough Script**: [demo/DEMO_SCRIPT.md](demo/DEMO_SCRIPT.md)
-* **Target Duration**: 3–5 minutes
-* **Demo Sequence**: Problem Hook ➔ Rakshak AI Introduction ➔ Guaranteed Return Scan ➔ Screenshot Analysis ➔ Education Hub & Checklist ➔ Privacy History ➔ Closing.
-
----
-
-## 🔮 Future Scope
-
-1. **Regional Indian Languages**: Expanding the heuristic and NLP models to Hindi, Gujarati, Marathi, Tamil, Telugu, and Bengali.
-2. **Direct SEBI / RBI Registry Integration**: Real-time automated verification against SEBI's intermediary database (sebi.gov.in).
-3. **Deepfake Audio/Video Detection**: Identifying synthesized celebrity/finfluencer video endorsements.
-4. **Crowdsourced Threat Radar**: Anonymous community reporting to flag emerging scam campaigns across India before they spread.
-5. **Messaging App Bot**: Integrating Rakshak AI as an on-demand WhatsApp and Telegram safety verification bot.
+* **Heuristic Indicators**: Risk scores are calculated based on recognized pattern weights; they are not legal proof of fraud.
+* **OCR Quality Dependency**: Text extraction accuracy depends on screenshot resolution and contrast.
+* **Structural URL Analysis**: URL verification inspects syntactic heuristics and known deceptive patterns; it does not execute client-side scripts.
+* **Non-Antivirus Scope**: Rakshak AI is focused on scams, phishing, and social engineering; it is not an endpoint antivirus or firewall tool.
 
 ---
 
-## 👥 Contributors
+## 16. Screenshots
 
-* **Team Rakshak AI** — Developed for the SANGYAN Investor Protection Hackathon (2026).
-* **Track**: Digital Fraud & Scam Resilience
+| Screen | Description | File |
+| :--- | :--- | :--- |
+| **Landing Page** | Cybersecurity hero, threat taxonomy & core features | `docs/screenshots/01_landing_page.png` |
+| **Analyze Page** | Message, Screenshot & URL analysis interface with demo presets | `docs/screenshots/02_analyzer_input.png` |
+| **Digital Safety Report** | Heuristic gauge, primary threat classification & explanation | `docs/screenshots/03_results_risk_meter.png` |
+| **Warning Signals & Evidence** | Deterministic signal cards & exact evidence highlight | `docs/screenshots/04_results_signals.png` |
+| **Digital Safety Hub** | 8 Threat cards & 5-Second Safety Check protocol | `docs/screenshots/05_education_hub.png` |
+
+---
+
+## 17. Demo Video
+
+* A 3-minute video presentation demonstrating live scam detection, OCR screenshot ingestion, URL verification, and the Digital Safety Hub is included:
+  * Video Recording: `Screen Recording 2026-10-04 235708.mp4`
+  * Complete Video Presentation Script: [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md)
+
+---
+
+## 18. Future Scope
+
+* **Browser Extension**: Real-time evaluation of visited URLs and highlighted text directly in Chrome/Edge.
+* **Email & Messaging Client Plugins**: Integrations for Outlook, Gmail, and WhatsApp Web to flag high-risk social engineering in incoming messages.
+* **Expanded Domain Threat Intelligence**: Integration with public threat intelligence feeds for domain age, WHOIS analysis, and certificate validation.
+* **Multilingual Safety Heuristics**: Expanded linguistic rules for regional Indian languages (Hindi, Tamil, Telugu, Marathi).
+
+---
+
+## 19. License
+
+MIT License. Developed for HackNowa Global Hackathon 2026.
+

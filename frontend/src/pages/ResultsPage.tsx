@@ -2,12 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ShieldAlert, CheckCircle2, ChevronLeft, RotateCcw,
-  MessageSquare, Image, Globe, Info, AlertTriangle, Eye
+  MessageSquare, Image, Globe, Info, AlertTriangle, Eye, ShieldCheck, Tag
 } from 'lucide-react';
 import type { AnalysisResult } from '../types';
 import RiskCard from '../components/RiskCard';
 import SignalCard from '../components/SignalCard';
-import AskRakshak from '../components/AskRakshak';
 import { highlightEvidence, getRiskColor, getInputTypeLabel } from '../utils/helpers';
 
 interface ResultsPageProps {
@@ -41,9 +40,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
 
   return (
     <div style={{ paddingTop: 64, minHeight: '100vh', padding: '80px 24px 80px' }}>
-      <div style={{ maxWidth: 860, margin: '0 auto' }} ref={contentRef}>
+      <div style={{ maxWidth: 880, margin: '0 auto' }} ref={contentRef}>
 
-        {/* Back / Re-analyze */}
+        {/* Back / Re-analyze Controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
           <button
             onClick={() => navigate('/analyze')}
@@ -55,9 +54,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
             Back to Analyzer
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
               <InputIcon size={14} color="#60A5FA" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#60A5FA' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#60A5FA' }}>
                 {getInputTypeLabel(result.input_type)}
               </span>
             </div>
@@ -68,35 +67,124 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
               id="analyze-again-btn"
             >
               <RotateCcw size={14} />
-              Analyze Again
+              Analyze Another
             </button>
           </div>
         </div>
 
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(37, 99, 235, 0.12)',
+            border: '1px solid rgba(37, 99, 235, 0.25)',
+            borderRadius: 999, padding: '4px 14px', marginBottom: 12,
+            fontSize: 12, fontWeight: 700, color: '#60A5FA', letterSpacing: '0.5px'
+          }}>
+            <ShieldCheck size={14} />
+            EVIDENCE-BASED CYBERSECURITY EVALUATION
+          </div>
           <h1 style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 'clamp(22px, 3vw, 32px)',
+            fontSize: 'clamp(24px, 3.5vw, 36px)',
             fontWeight: 800, color: '#F1F5F9', marginBottom: 8,
           }}>
-            Investor Safety Report
+            DIGITAL SAFETY REPORT
           </h1>
-          <p style={{ color: '#64748B', fontSize: 14 }}>
-            Evidence-first analysis · Not investment advice
+          <p style={{ color: '#94A3B8', fontSize: 14 }}>
+            Heuristic Safety Indicator · Detect. Understand. Stay Safe.
           </p>
         </div>
 
-        {/* Risk Card */}
+        {/* Primary Risk Card */}
         <div style={{ marginBottom: 28 }}>
           <RiskCard
             riskLevel={result.risk_level}
             riskScore={result.risk_score}
             summary={result.summary}
+            primaryThreat={result.primary_threat}
           />
         </div>
 
-        {/* Simple Explanation */}
+        {/* Primary Threat Categories Breakdown */}
+        {result.threat_types && result.threat_types.length > 0 && result.threat_types[0] !== 'Unable to Determine' && (
+          <div className="glass-card animate-fade-in-up" style={{ padding: '18px 24px', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94A3B8', fontSize: 12, fontWeight: 700 }}>
+                <Tag size={14} color="#60A5FA" />
+                IDENTIFIED THREAT CATEGORIES:
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {result.threat_types.map((type, idx) => (
+                  <span
+                    key={idx}
+                    style={{
+                      background: 'rgba(37, 99, 235, 0.12)',
+                      border: '1px solid rgba(59, 130, 246, 0.25)',
+                      borderRadius: 6,
+                      padding: '3px 10px',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: '#93C5FD',
+                    }}
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Screenshot OCR Text Section */}
+        {result.input_type === 'image' && (
+          <div className="glass-card animate-fade-in-up" style={{ padding: 24, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <Eye size={18} color="#60A5FA" />
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: '#F1F5F9', margin: 0 }}>
+                Text extracted from image (OCR)
+              </h2>
+            </div>
+            {result.extracted_text ? (
+              <div style={{
+                background: 'rgba(6, 18, 34, 0.7)', borderRadius: 10, padding: '14px 16px',
+                border: '1px solid rgba(59, 130, 246, 0.12)', fontSize: 14, color: '#CBD5E1', lineHeight: 1.7,
+              }}>
+                {result.extracted_text}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: '#94A3B8' }}>
+                {result.ocr_note || 'No readable text could be extracted from this image.'}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* URL Breakdown Section */}
+        {result.input_type === 'url' && result.url_details && (
+          <div className="glass-card animate-fade-in-up" style={{ padding: 24, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <Globe size={18} color="#60A5FA" />
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: '#F1F5F9', margin: 0 }}>
+                Domain & URL Indicators
+              </h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+              <div style={{ background: 'rgba(6, 18, 34, 0.7)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(59, 130, 246, 0.1)' }}>
+                <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>HOST / DOMAIN</div>
+                <div style={{ fontSize: 14, color: '#F1F5F9', fontWeight: 600, marginTop: 2 }}>{result.url_details.hostname}</div>
+              </div>
+              <div style={{ background: 'rgba(6, 18, 34, 0.7)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(59, 130, 246, 0.1)' }}>
+                <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>PROTOCOL</div>
+                <div style={{ fontSize: 14, color: result.url_details.scheme === 'https' ? '#34D399' : '#FB7185', fontWeight: 600, marginTop: 2 }}>
+                  {result.url_details.scheme.toUpperCase()} {result.url_details.scheme === 'http' && '(Non-secure)'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Why Is This Suspicious? */}
         {result.simple_explanation && (
           <div className="glass-card animate-fade-in-up" style={{ padding: 28, marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
@@ -107,10 +195,10 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
                 <Info size={17} color="#60A5FA" />
               </div>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 18, color: '#F1F5F9', margin: 0 }}>
-                Why is this suspicious?
+                Why This Is Suspicious
               </h2>
             </div>
-            <p style={{ margin: 0, fontSize: 15, color: 'rgba(203, 213, 225, 0.85)', lineHeight: 1.75 }}>
+            <p style={{ margin: 0, fontSize: 15, color: 'rgba(203, 213, 225, 0.9)', lineHeight: 1.75 }}>
               {result.simple_explanation}
             </p>
           </div>
@@ -121,7 +209,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
             <AlertTriangle size={20} color={getRiskColor(result.risk_level)} />
             <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, color: '#F1F5F9', margin: 0 }}>
-              Warning Signals
+              Warning Signals Detected
               {result.signals.length > 0 && (
                 <span style={{
                   marginLeft: 10,
@@ -149,8 +237,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
             }}>
               <CheckCircle2 size={32} color="#34D399" style={{ marginBottom: 12 }} />
               <div style={{ fontWeight: 600, fontSize: 15, color: '#F1F5F9', marginBottom: 6 }}>No Significant Warning Signs Detected</div>
-              <div style={{ fontSize: 14, color: '#64748B', maxWidth: 400, margin: '0 auto' }}>
-                This content does not appear to contain the warning patterns typically associated with investment fraud. Exercise independent judgment.
+              <div style={{ fontSize: 14, color: '#94A3B8', maxWidth: 440, margin: '0 auto' }}>
+                This content does not exhibit the deceptive patterns commonly associated with phishing or scam campaigns. Always maintain standard digital safety habits.
               </div>
             </div>
           ) : (
@@ -162,40 +250,22 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
           )}
         </section>
 
-        {/* Evidence Section */}
-        {result.extracted_text && (
-          <div className="glass-card animate-fade-in-up" style={{ padding: 28, marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <Eye size={18} color="#FCD34D" />
-              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 18, color: '#F1F5F9', margin: 0 }}>
-                Extracted Text (OCR)
-              </h2>
-            </div>
-            <div style={{
-              background: 'rgba(6, 18, 34, 0.6)', borderRadius: 10, padding: '16px',
-              border: '1px solid rgba(59, 130, 246, 0.1)', fontSize: 14, color: '#CBD5E1', lineHeight: 1.7,
-            }}>
-              {result.extracted_text}
-            </div>
-          </div>
-        )}
-
-        {/* Evidence Highlighting */}
+        {/* Exact Evidence Highlighting */}
         {result.signals.length > 0 && (
-          <div className="glass-card animate-fade-in-up" style={{ padding: 28, marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div className="glass-card animate-fade-in-up" style={{ padding: 28, marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
               <Eye size={18} color="#FCD34D" />
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 18, color: '#F1F5F9', margin: 0 }}>
-                Evidence Detected
+                Exact Evidence
               </h2>
             </div>
-            <p style={{ fontSize: 13, color: '#475569', marginBottom: 14 }}>
-              Highlighted phrases are the specific evidence detected by the safety analysis.
+            <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 14 }}>
+              Phrases highlighted below triggered specific deterministic threat detection rules:
             </p>
             <div
               style={{
-                background: 'rgba(6, 18, 34, 0.6)', borderRadius: 10, padding: '16px',
-                border: '1px solid rgba(59, 130, 246, 0.1)',
+                background: 'rgba(6, 18, 34, 0.7)', borderRadius: 10, padding: '16px',
+                border: '1px solid rgba(59, 130, 246, 0.12)',
                 fontSize: 15, color: '#CBD5E1', lineHeight: 1.9,
               }}
               dangerouslySetInnerHTML={{
@@ -210,11 +280,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
 
         {/* Safe Next Steps */}
         {result.safe_actions.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <CheckCircle2 size={20} color="#34D399" />
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, color: '#F1F5F9', margin: 0 }}>
-                What Should You Do?
+                WHAT SHOULD YOU DO?
               </h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -227,19 +297,19 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
                     background: 'rgba(52, 211, 153, 0.06)',
                     border: '1px solid rgba(52, 211, 153, 0.15)',
                     borderRadius: 12, padding: '14px 18px',
-                    animationDelay: `${i * 0.1}s`, opacity: 0,
+                    animationDelay: `${i * 0.08}s`,
                   }}
                 >
                   <div style={{
-                    width: 26, height: 26,
+                    width: 24, height: 24,
                     background: 'rgba(52, 211, 153, 0.15)',
-                    borderRadius: 8, flexShrink: 0,
+                    borderRadius: 6, flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700, color: '#34D399',
+                    fontSize: 12, fontWeight: 700, color: '#34D399',
                   }}>
-                    {i + 1}
+                    ✓
                   </div>
-                  <p style={{ margin: 0, fontSize: 14, color: 'rgba(203, 213, 225, 0.85)', lineHeight: 1.6 }}>
+                  <p style={{ margin: 0, fontSize: 14, color: 'rgba(203, 213, 225, 0.9)', lineHeight: 1.6 }}>
                     {action}
                   </p>
                 </div>
@@ -248,7 +318,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
           </div>
         )}
 
-        {/* Uncertainty */}
+        {/* Uncertainty / System Limitations */}
         {result.uncertainty && (
           <div style={{
             padding: '16px 20px',
@@ -259,7 +329,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <Info size={16} color="#60A5FA" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#60A5FA', marginBottom: 4 }}>SYSTEM LIMITATIONS</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#60A5FA', letterSpacing: '0.5px', marginBottom: 4 }}>
+                  SYSTEM ANALYSIS LIMITATIONS
+                </div>
                 <p style={{ margin: 0, fontSize: 13, color: '#94A3B8', lineHeight: 1.6 }}>{result.uncertainty}</p>
               </div>
             </div>
@@ -268,20 +340,15 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ result }) => {
 
         {/* Disclaimer */}
         <div className="disclaimer-box">
-          <strong style={{ color: '#60A5FA' }}>Disclaimer:</strong> Rakshak AI provides educational and investor-safety analysis only.
-          It does not provide investment advice or guarantee that content is fraudulent.
-          The risk score ({result.risk_score}/100) is a heuristic safety indicator, not a probability of fraud.
-          Users should independently verify important information through authoritative sources.
+          <strong style={{ color: '#60A5FA' }}>DISCLAIMER:</strong> Risk scores are heuristic safety indicators, not proof that content is fraudulent.
+          Rakshak AI does not provide financial or legal advice. Always independently verify important claims through authoritative sources.
         </div>
 
         {/* Score explanation */}
-        <div style={{ marginTop: 12, padding: '12px 16px', background: 'rgba(6, 18, 34, 0.4)', borderRadius: 10, fontSize: 12, color: '#475569' }}>
-          Score ranges: 0–24 = Low · 25–59 = Medium · 60–100 = High. The score reflects the number and severity of warning patterns detected, not the probability of fraud.
+        <div style={{ marginTop: 12, padding: '12px 16px', background: 'rgba(6, 18, 34, 0.5)', borderRadius: 10, fontSize: 12, color: '#64748B' }}>
+          Score ranges: 0–24 = Low Risk · 25–59 = Medium Risk · 60–100 = High Risk. The score reflects detected heuristic threat patterns, not a mathematical probability of fraud.
         </div>
       </div>
-
-      {/* Ask Rakshak floating assistant */}
-      <AskRakshak analysisContext={result} />
     </div>
   );
 };

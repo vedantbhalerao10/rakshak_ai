@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Rakshak AI",
-    description="Evidence-first investor-safety analysis API",
+    description="AI-Powered Digital Scam & Phishing Shield API — HackNowa Global Hackathon 2026",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",

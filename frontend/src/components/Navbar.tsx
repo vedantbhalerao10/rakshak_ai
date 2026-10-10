@@ -5,9 +5,9 @@ import { Shield, Menu, X, ChevronRight } from 'lucide-react';
 const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/analyze', label: 'Analyze' },
-  { to: '/education', label: 'Education' },
+  { to: '/safety-hub', label: 'Digital Safety Hub' },
   { to: '/history', label: 'History' },
-  { to: '/about', label: 'About' },
+  { to: '/about', label: 'About / Safety' },
 ];
 
 const Navbar: React.FC = () => {
@@ -63,9 +63,9 @@ const Navbar: React.FC = () => {
 
           {/* CTA */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link to="/analyze" className="btn-primary mobile-hidden" style={{ fontSize: 14, padding: '8px 18px' }}>
+            <Link to="/analyze" className="btn-primary mobile-hidden" style={{ fontSize: 13, padding: '8px 18px' }} id="nav-cta-btn">
               <Shield size={15} />
-              Analyze Content
+              Analyze Suspicious Content
             </Link>
             <button
               className="btn-ghost"
@@ -121,7 +121,7 @@ const Navbar: React.FC = () => {
               style={{ width: '100%', justifyContent: 'center' }}
             >
               <Shield size={16} />
-              Analyze Content
+              Analyze Suspicious Content
             </Link>
           </div>
         </div>

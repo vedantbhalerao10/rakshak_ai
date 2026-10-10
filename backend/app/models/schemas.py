@@ -17,6 +17,8 @@ class AnalysisSignal(BaseModel):
 class AnalysisResult(BaseModel):
     risk_level: str  # HIGH, MEDIUM, LOW, UNABLE_TO_DETERMINE
     risk_score: int = Field(ge=0, le=100)
+    primary_threat: str = "Unable to Determine"
+    threat_types: list[str] = []
     summary: str
     signals: list[AnalysisSignal] = []
     safe_actions: list[str] = []
@@ -24,6 +26,9 @@ class AnalysisResult(BaseModel):
     simple_explanation: str = ""
     input_type: str = "text"
     demo_mode: bool = False
+    extracted_text: Optional[str] = None
+    ocr_note: Optional[str] = None
+    url_details: Optional[dict] = None
 
 
 class TextAnalysisRequest(BaseModel):
@@ -50,6 +55,7 @@ class HistoryItem(BaseModel):
     timestamp: datetime
     input_type: str
     content_preview: str
+    threat_type: Optional[str] = "Unable to Determine"
     risk_level: str
     risk_score: int
     signals_count: int
